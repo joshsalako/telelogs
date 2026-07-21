@@ -134,7 +134,6 @@ def randomize_example(
 
     # Work from the later table first so index positions remain valid.
     _shuffle_table(lines, engineering_heading, rng, "engineering")
-    _shuffle_table(lines, drive_heading, rng, "drive-test")
     randomized_question = "\n".join(lines) + ("\n" if had_trailing_newline else "")
 
     return RandomizedExample(
