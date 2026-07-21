@@ -12,6 +12,12 @@ from synthesis.client import MalformedModelOutput, VLLMClient
 from synthesis.config import SETTINGS
 from synthesis.models import Strategy, Trajectory
 from synthesis.pipeline import _process_example
+from synthesis.prompts import (
+    CONTRADICTION_SYSTEM_PROMPT,
+    DOMAIN_KNOWLEDGE_AND_HEURISTICS,
+    ELIMINATION_SYSTEM_PROMPT,
+    reasoning_messages,
+)
 from synthesis.randomization import SourceFormatError, randomize_example
 from synthesis.store import OutputStore
 from synthesis.validation import (
@@ -98,6 +104,52 @@ class RandomizationTests(unittest.TestCase):
         )
         self.assertEqual([item.variant_index for item in variants], [0, 1, 2])
         self.assertEqual(len({item.question for item in variants}), 3)
+
+
+class PromptTests(unittest.TestCase):
+    def test_domain_heuristics_include_every_required_check(self) -> None:
+        prompt = DOMAIN_KNOWLEDGE_AND_HEURISTICS
+        normalized_prompt = " ".join(prompt.split())
+
+        required_fragments = (
+            "C1 — Excessive Downtilt",
+            "every check below in your Chain-of-Thought reasoning",
+            "Total Downtilt = Mechanical Downtilt + Digital Tilt",
+            "255 to 6 degrees",
+            "SCENARIO_5 = 6 degrees",
+            "SCENARIO_11 = 12 degrees",
+            "SCENARIO_12 or higher = 25 degrees",
+            "Serving_PCI % 30",
+            "Neighbor_PCI % 30",
+            "C6 MUST be eliminated",
+            "`gNodeB ID`",
+            "C4 is then mathematically impossible",
+            "max(`GPS Speed (km/h)`)",
+            "greater than 40 km/h",
+            "arithmetic mean of the `DL RB Num`",
+            "below 160",
+            "Reconstruct chronological order from the Timestamp column",
+            "immediately before and after the handover",
+        )
+        for fragment in required_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, normalized_prompt)
+
+        self.assertIn("randomizes those candidates to R1-R8", normalized_prompt)
+        self.assertIn("Never assume that C1 maps to R1", normalized_prompt)
+
+    def test_both_reasoning_strategies_enforce_shared_heuristics(self) -> None:
+        elimination = reasoning_messages("question", Strategy.ELIMINATION)
+        contradiction = reasoning_messages("question", Strategy.CONTRADICTION)
+
+        self.assertEqual(elimination[1], {"role": "user", "content": "question"})
+        self.assertEqual(contradiction[1], elimination[1])
+        self.assertIn(DOMAIN_KNOWLEDGE_AND_HEURISTICS, elimination[0]["content"])
+        self.assertIn(DOMAIN_KNOWLEDGE_AND_HEURISTICS, contradiction[0]["content"])
+        self.assertEqual(elimination[0]["content"], ELIMINATION_SYSTEM_PROMPT)
+        self.assertEqual(contradiction[0]["content"], CONTRADICTION_SYSTEM_PROMPT)
+        self.assertIn("elimination routine", elimination[0]["content"])
+        self.assertIn("contradiction routine", contradiction[0]["content"])
 
 
 class ValidationTests(unittest.TestCase):

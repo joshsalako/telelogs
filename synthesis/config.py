@@ -20,17 +20,17 @@ STATE_PATH = REPOSITORY_ROOT / "synthesis" / "synthesis_state.jsonl"
 
 # Local OpenAI-compatible vLLM deployment.
 CHAT_COMPLETIONS_URL = (
-    "https://joshsalako--qwen-vllm-deployment-serve.modal.run/v1/chat/completions"
+    "https://joshsalako--ep-qwen3-6-27b-server.us-west.modal.direct/v1/chat/completions"
 )
-MODEL_NAME = "Qwen3.6-27B"
+MODEL_NAME = "Qwen/Qwen3.6-27B"
 API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 
 # Reproducibility and pipeline shape.
 RANDOM_SEED = 20260721
 AUGMENTATIONS_PER_ITEM = 3
 AGENTS_PER_ITEM = 4  # Must be even so both reasoning strategies are balanced.
-ITEM_WORKERS = 4
-MAX_IN_FLIGHT_REQUESTS = 16
+ITEM_WORKERS = 16
+MAX_IN_FLIGHT_REQUESTS = 128
 PIPELINE_VERSION = "2.0"
 
 # Request/retry behavior.
@@ -42,7 +42,7 @@ RETRY_BACKOFF_MAX_SECONDS = 30.0
 # Generation settings. Reasoning uses diversity; formatting is conservative.
 REASONING_TEMPERATURE = 0.7
 REASONING_TOP_P = 0.95
-REASONING_MAX_TOKENS = 4096
+REASONING_MAX_TOKENS = 8192
 FORMATTING_TEMPERATURE = 0.2
 FORMATTING_TOP_P = 0.9
 FORMATTING_MAX_TOKENS = 2048
