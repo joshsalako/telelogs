@@ -28,13 +28,14 @@ hf_cache_vol = modal.Volume.from_name("huggingface-cache", create_if_missing=Tru
 @app.function(
     image=vllm_image,
     gpu="A100:1",  # 1x A100 80GB GPU
+    memory=65536,
     volumes={"/root/.cache/huggingface": hf_cache_vol},
     timeout=2 * HOURS,
     secrets=[
         modal.Secret.from_dotenv()
     ],  # This will automatically load HF_TOKEN from your local .env file when deploying
 )
-@modal.web_server(8000, startup_timeout=15 * MINUTES)
+@modal.web_server(8000, startup_timeout=20 * MINUTES)
 @modal.concurrent(max_inputs=100)
 def serve():
     """

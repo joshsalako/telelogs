@@ -34,6 +34,12 @@ To permanently deploy the model server to Modal so that it runs persistently:
 uv run modal deploy modal_qwen_deploy.py
 ```
 
+To take down the permanent deployment and stop incurring costs when you are finished:
+
+```bash
+uv run modal app stop qwen-vllm-deployment
+```
+
 After deploying to Modal, verify that the health endpoint and chat completion respond successfully using Python or `curl`.
 
 Only after the server is deployed and responding, run the synthesis from the repository root with its Python 3.14 environment:
