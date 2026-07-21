@@ -115,34 +115,23 @@ class PromptTests(unittest.TestCase):
 
     def test_domain_heuristics_include_every_required_check(self) -> None:
         prompt = DOMAIN_KNOWLEDGE_AND_HEURISTICS
-        normalized_prompt = " ".join(prompt.split())
+        expected = """### DOMAIN KNOWLEDGE & EVALUATION HEURISTICS:
+You must explicitly calculate and verify the following rules before reaching a conclusion:
 
-        required_fragments = (
-            "C1 — Excessive Downtilt",
-            "every check below in your Chain-of-Thought reasoning",
-            "Total Downtilt = Mechanical Downtilt + Digital Tilt",
-            "255 to 6 degrees",
-            "SCENARIO_5 = 6 degrees",
-            "SCENARIO_11 = 12 degrees",
-            "SCENARIO_12 or higher = 25 degrees",
-            "Serving_PCI % 30",
-            "Neighbor_PCI % 30",
-            "C6 MUST be eliminated",
-            "`gNodeB ID`",
-            "C4 is then mathematically impossible",
-            "max(`GPS Speed (km/h)`)",
-            "greater than 40 km/h",
-            "arithmetic mean of the `DL RB Num`",
-            "below 160",
-            "Reconstruct chronological order from the Timestamp column",
-            "immediately before and after the handover",
-        )
-        for fragment in required_fragments:
-            with self.subTest(fragment=fragment):
-                self.assertIn(fragment, normalized_prompt)
+1. **Evaluating C1 (Excessive Downtilt):** Calculate the Total Downtilt by adding "Mechanical Downtilt" and "Digital Tilt" (Note: a Digital Tilt of 255 equals 6 degrees). Compare this total to the cell's vertical beamwidth (DEFAULT/SCENARIO_1-5 = 6°, SCENARIO_6-11 = 12°, SCENARIO_12+ = 25°). If the total downtilt is high but the beamwidth is narrow, far-end coverage will be weak.
+2. **Evaluating C2 (Coverage distance > 1km):** Do not hallucinate complex distance math. Compare the Longitude/Latitude in the User Plane data against the Longitude/Latitude of the Serving Cell in the Engineering Parameters. *Rule of thumb:* 0.01 degrees is roughly 1 km. If the absolute difference between the user's coordinates and the serving cell's coordinates is less than 0.009, the distance is guaranteed to be under 1km. You MUST explicitly rule out C2.
+3. **Evaluating C3 (Neighbor Cell Higher Throughput):** Look for timestamps where a handover occurs (the Serving PCI changes to a Neighbor PCI). If the throughput (Mbps) jumps significantly immediately after this handover, the neighbor cell provides higher throughput.
+4. **Evaluating C4 (Non-colocated Overlapping Coverage):** Check the `gNodeB ID` of the serving cell and the top interfering neighbor cell. If they share the exact same `gNodeB ID`, they are on the same physical tower (colocated). This makes C4 mathematically impossible, and you MUST explicitly rule it out.
+5. **Evaluating C5 (Frequent Handovers):** Scan the `5G KPI PCell RF Serving PCI` column from top to bottom. Count the exact number of times the Serving PCI value changes. If the PCI changes only once (a single handover) or zero times, it is NOT frequent. You MUST explicitly rule out C5.
+6. **Evaluating C6 (PCI Mod 30 Conflict):** Explicitly calculate `Serving_PCI % 30` and `Neighbor_PCI % 30`. If they are not equal, there is no conflict, and C6 MUST be eliminated.
+7. **Evaluating C7 (Test Vehicle Speed > 40km/h):** Scan the User Plane table for the maximum value in the `GPS Speed (km/h)` column. Explicitly state if it is > 40.
+8. **Evaluating C8 (Average RBs < 160):** Scan the User Plane table for the `5G KPI PCell Layer1 DL RB Num` column. Explicitly state if the values average below 160.
 
-        self.assertIn("randomizes those candidates to R1-R8", normalized_prompt)
-        self.assertIn("Never assume that C1 maps to R1", normalized_prompt)
+Ensure that your Step-by-Step Root Cause Analysis explicitly mentions the evaluation of all 8 of these points."""
+
+        self.assertEqual(prompt, expected)
+        self.assertNotIn("C1 — Excessive Downtilt", prompt)
+        self.assertNotIn("Never assume that C1 maps to R1", prompt)
 
     def test_both_reasoning_strategies_enforce_shared_heuristics(self) -> None:
         elimination = reasoning_messages("question", Strategy.ELIMINATION)

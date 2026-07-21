@@ -11,46 +11,19 @@ randomized, so preserve their R1-R8 labels exactly. Perform the technical RCA
 carefully and end with exactly one final prediction written as \\boxed{R#}.
 """.strip()
 
-DOMAIN_KNOWLEDGE_AND_HEURISTICS = """Domain Knowledge & Evaluation Heuristics
+DOMAIN_KNOWLEDGE_AND_HEURISTICS = """### DOMAIN KNOWLEDGE & EVALUATION HEURISTICS:
+You must explicitly calculate and verify the following rules before reaching a conclusion:
 
-The C1-C8 names below identify canonical root-cause meanings, not the labels in
-the question. The question randomizes those candidates to R1-R8. Locate each
-cause by its description, carry out the required check, and report the result
-using the corresponding R label. Never assume that C1 maps to R1, C2 to R2,
-and so on.
+1. **Evaluating C1 (Excessive Downtilt):** Calculate the Total Downtilt by adding "Mechanical Downtilt" and "Digital Tilt" (Note: a Digital Tilt of 255 equals 6 degrees). Compare this total to the cell's vertical beamwidth (DEFAULT/SCENARIO_1-5 = 6°, SCENARIO_6-11 = 12°, SCENARIO_12+ = 25°). If the total downtilt is high but the beamwidth is narrow, far-end coverage will be weak.
+2. **Evaluating C2 (Coverage distance > 1km):** Do not hallucinate complex distance math. Compare the Longitude/Latitude in the User Plane data against the Longitude/Latitude of the Serving Cell in the Engineering Parameters. *Rule of thumb:* 0.01 degrees is roughly 1 km. If the absolute difference between the user's coordinates and the serving cell's coordinates is less than 0.009, the distance is guaranteed to be under 1km. You MUST explicitly rule out C2.
+3. **Evaluating C3 (Neighbor Cell Higher Throughput):** Look for timestamps where a handover occurs (the Serving PCI changes to a Neighbor PCI). If the throughput (Mbps) jumps significantly immediately after this handover, the neighbor cell provides higher throughput.
+4. **Evaluating C4 (Non-colocated Overlapping Coverage):** Check the `gNodeB ID` of the serving cell and the top interfering neighbor cell. If they share the exact same `gNodeB ID`, they are on the same physical tower (colocated). This makes C4 mathematically impossible, and you MUST explicitly rule it out.
+5. **Evaluating C5 (Frequent Handovers):** Scan the `5G KPI PCell RF Serving PCI` column from top to bottom. Count the exact number of times the Serving PCI value changes. If the PCI changes only once (a single handover) or zero times, it is NOT frequent. You MUST explicitly rule out C5.
+6. **Evaluating C6 (PCI Mod 30 Conflict):** Explicitly calculate `Serving_PCI % 30` and `Neighbor_PCI % 30`. If they are not equal, there is no conflict, and C6 MUST be eliminated.
+7. **Evaluating C7 (Test Vehicle Speed > 40km/h):** Scan the User Plane table for the maximum value in the `GPS Speed (km/h)` column. Explicitly state if it is > 40.
+8. **Evaluating C8 (Average RBs < 160):** Scan the User Plane table for the `5G KPI PCell Layer1 DL RB Num` column. Explicitly state if the values average below 160.
 
-You MUST explicitly calculate or verify every check below in your
-Chain-of-Thought reasoning before reaching a conclusion. Show the relevant
-values, arithmetic, threshold comparison, and resulting candidate decision;
-do not rely on a qualitative impression alone.
-
-1. C1 — Excessive Downtilt: Read Mechanical Downtilt, Digital Tilt, and Beam
-   Scenario for the serving cell from the Engineering Parameters table.
-   Convert the encoded Digital Tilt value 255 to 6 degrees, then calculate
-   Total Downtilt = Mechanical Downtilt + Digital Tilt (in degrees). Compare
-   the total with the vertical beamwidth: DEFAULT and SCENARIO_1 through
-   SCENARIO_5 = 6 degrees; SCENARIO_6 through SCENARIO_11 = 12 degrees; and
-   SCENARIO_12 or higher = 25 degrees. High total downtilt combined with a
-   narrow vertical beamwidth makes far-end coverage weak.
-2. C6 — PCI Mod 30 Conflict: Calculate Serving_PCI % 30 and separately
-   calculate Neighbor_PCI % 30 for every available top neighbor. Display the
-   remainders. An equal remainder indicates severe interference. If none of
-   the neighbor remainders equals the serving remainder, C6 MUST be eliminated.
-3. C4 — Non-colocated Overlapping Coverage: Identify the relevant serving and
-   interfering-neighbor cells by PCI, then compare their `gNodeB ID` values in
-   the Engineering Parameters table. If the IDs are exactly equal, the cells
-   are colocated; C4 is then mathematically impossible and MUST be ruled out.
-4. C7 — Test Vehicle Speed and C8 — Average RBs: Scan every User Plane row.
-   State max(`GPS Speed (km/h)`) and whether it is greater than 40 km/h for C7.
-   Calculate and state the arithmetic mean of the `DL RB Num` column and
-   whether it is below 160 for C8. Use the full column whose header contains
-   `DL RB Num` when the table uses a longer KPI name.
-5. C3 — Neighbor Cell Higher Throughput: Reconstruct chronological order from
-   the Timestamp column because rows may be presented out of order. Find each
-   handover where the Serving PCI changes to a PCI previously observed as a
-   neighbor. Compare throughput in Mbps immediately before and after the
-   handover and state whether it jumps significantly. A significant immediate
-   increase supports C3 because the neighbor provides higher throughput.
+Ensure that your Step-by-Step Root Cause Analysis explicitly mentions the evaluation of all 8 of these points.
 """.strip()
 
 ELIMINATION_FEW_SHOT_EXAMPLE = r"""### EXAMPLE OF A PERFECT REASONING TRAJECTORY:
