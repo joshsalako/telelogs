@@ -42,6 +42,13 @@ htmlcov/
 
 # Runtime logs
 *.log
+logs/
+
+# Local model downloads and caches
+models/
+weights/
+cache/
+huggingface/
 
 # Generated synthesis data and resumable runtime state
 synthesis/sft_train_data.jsonl
