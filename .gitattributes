@@ -1,0 +1,6 @@
+# Store tabular datasets with stable cross-platform line endings.
+*.csv text eol=lf
+
+# Keep generated JSON and JSONL consistently diffable across platforms.
+*.json text eol=lf
+*.jsonl text eol=lf

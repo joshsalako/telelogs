@@ -1,0 +1,4 @@
+__pycache__/
+*.py[cod]
+sft_train_data.jsonl
+synthesis_state.jsonl

@@ -1,0 +1,48 @@
+# Operating-system metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local Python environments
+.venv/
+venv/
+env/
+
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+
+# Test, lint, type-check, and coverage caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.coverage
+.coverage.*
+htmlcov/
+
+# Jupyter transient files
+.ipynb_checkpoints/
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+
+# Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Runtime logs
+*.log
+
+# Generated synthesis data and resumable runtime state
+synthesis/sft_train_data.jsonl
+synthesis/synthesis_state.jsonl
