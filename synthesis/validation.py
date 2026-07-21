@@ -69,9 +69,7 @@ def validate_formatted_output(text: str, expected_answer: str) -> None:
     for heading in FORMAT_HEADINGS:
         idx = text.find(heading)
         if idx == -1:
-            raise MalformedModelOutput(
-                f"Expected heading {heading!r} not found"
-            )
+            raise MalformedModelOutput(f"Expected heading {heading!r} not found")
         positions.append(idx)
     if positions != sorted(positions):
         raise MalformedModelOutput("Formatter headings are out of order")

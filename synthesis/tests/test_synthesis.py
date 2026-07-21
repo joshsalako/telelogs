@@ -15,6 +15,7 @@ from synthesis.pipeline import _process_example
 from synthesis.prompts import (
     CONTRADICTION_SYSTEM_PROMPT,
     DOMAIN_KNOWLEDGE_AND_HEURISTICS,
+    ELIMINATION_FEW_SHOT_EXAMPLE,
     ELIMINATION_SYSTEM_PROMPT,
     reasoning_messages,
 )
@@ -107,6 +108,11 @@ class RandomizationTests(unittest.TestCase):
 
 
 class PromptTests(unittest.TestCase):
+    def test_generation_defaults_use_six_lower_temperature_agents(self) -> None:
+        self.assertEqual(SETTINGS.agents_per_item, 6)
+        self.assertEqual(SETTINGS.reasoning_temperature, 0.4)
+        SETTINGS.validate()
+
     def test_domain_heuristics_include_every_required_check(self) -> None:
         prompt = DOMAIN_KNOWLEDGE_AND_HEURISTICS
         normalized_prompt = " ".join(prompt.split())
@@ -150,6 +156,18 @@ class PromptTests(unittest.TestCase):
         self.assertEqual(contradiction[0]["content"], CONTRADICTION_SYSTEM_PROMPT)
         self.assertIn("elimination routine", elimination[0]["content"])
         self.assertIn("contradiction routine", contradiction[0]["content"])
+
+    def test_elimination_prompt_contains_exact_c3_few_shot_example(self) -> None:
+        self.assertIn(ELIMINATION_FEW_SHOT_EXAMPLE, ELIMINATION_SYSTEM_PROMPT)
+        self.assertNotIn(ELIMINATION_FEW_SHOT_EXAMPLE, CONTRADICTION_SYSTEM_PROMPT)
+        self.assertIn("PCI 919 mod 30 = 19", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn("total downtilt is 12°", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn(r"\boxed{C3}", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertTrue(
+            ELIMINATION_SYSTEM_PROMPT.endswith(
+                "exactly one final prediction written as \\boxed{R#}."
+            )
+        )
 
 
 class ValidationTests(unittest.TestCase):

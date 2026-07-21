@@ -13,10 +13,10 @@ variants. For each variant, it:
 1. Deterministically shuffles the data rows in both tables and maps `C1`-`C8`
    to a random permutation of `R1`-`R8`. Headers, descriptions, and every table
    value remain unchanged.
-2. Runs four independent agents concurrently. Two use systematic elimination;
-   two test each candidate by contradiction.
+2. Runs six independent agents concurrently. Three use systematic elimination;
+   three test each candidate by contradiction.
 3. parses each final `\boxed{R#}` prediction and continues only when at least
-   three of four agents agree with the randomized ground truth.
+   four of six agents agree with the randomized ground truth.
 4. Selects the winning trajectory with the widest candidate coverage and sends
    it through a formatting pass that must produce exactly `Task 1`, `Task 2`,
    `Task 3`, and `Summary` sections with the validated boxed answer.
@@ -34,7 +34,7 @@ Edit [`config.py`](config.py) before running. Important settings include:
   `http://localhost:8000/v1/chat/completions`.
 - `MODEL_NAME`: defaults to `Qwen3.6-27B` and must match the name exposed by
   the local vLLM deployment.
-- `AGENTS_PER_ITEM`: defaults to four and must be an even number.
+- `AGENTS_PER_ITEM`: defaults to six and must be an even number.
 - `AUGMENTATIONS_PER_ITEM`: defaults to three. With 2,400 source items this
   schedules 7,200 independently randomized and validated generation attempts.
 - `ITEM_WORKERS` and `MAX_IN_FLIGHT_REQUESTS`: bound item-level and HTTP
