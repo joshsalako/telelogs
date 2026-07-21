@@ -26,7 +26,7 @@ API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 # Reproducibility and pipeline shape.
 RANDOM_SEED = 20260721
 AUGMENTATIONS_PER_ITEM = 3
-AGENTS_PER_ITEM = 6  # Must be even so both reasoning strategies are balanced.
+AGENTS_PER_ITEM = 4  # Must be even so both reasoning strategies are balanced.
 ITEM_WORKERS = 16
 MAX_IN_FLIGHT_REQUESTS = 128
 PIPELINE_VERSION = "2.0"
