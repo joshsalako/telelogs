@@ -65,7 +65,6 @@ class DeploymentSettings:
     gpu_memory_utilization: float = 0.90
     max_num_seqs: int = 8
     reasoning_parser: str = "qwen3"
-    language_model_only: bool = True
     quantization: str = "bitsandbytes"
     api_key: str | None = None
     hf_token: str | None = None
@@ -151,9 +150,6 @@ def load_settings(
         ),
         max_num_seqs=_convert("QWEN_VLLM_MAX_NUM_SEQS", get("MAX_NUM_SEQS", "8"), int),
         reasoning_parser=get("REASONING_PARSER", "qwen3"),
-        language_model_only=_parse_bool(
-            "QWEN_VLLM_LANGUAGE_MODEL_ONLY", get("LANGUAGE_MODEL_ONLY", "true")
-        ),
         quantization=get("QUANTIZATION", "bitsandbytes"),
         api_key=get("API_KEY", "").strip() or None,
         hf_token=optional("HF_TOKEN"),

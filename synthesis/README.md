@@ -56,8 +56,7 @@ uv sync --active
 uv run --active python -m synthesis
 ```
 
-The model server must already be running. The script does not deploy or manage
-vLLM itself.
+The vLLM model server must already be running (e.g. deployed via Modal using `modal deploy modal_qwen_deploy.py`). The synthesis script will query the URL defined in your configuration.
 
 ## Outputs and resume behavior
 

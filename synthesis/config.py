@@ -19,7 +19,9 @@ OUTPUT_PATH = REPOSITORY_ROOT / "synthesis" / "sft_train_data.jsonl"
 STATE_PATH = REPOSITORY_ROOT / "synthesis" / "synthesis_state.jsonl"
 
 # Local OpenAI-compatible vLLM deployment.
-CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
+CHAT_COMPLETIONS_URL = (
+    "https://joshsalako--qwen-vllm-deployment-serve.modal.run/v1/chat/completions"
+)
 MODEL_NAME = "Qwen3.6-27B"
 API_KEY = os.getenv("VLLM_API_KEY", "EMPTY")
 

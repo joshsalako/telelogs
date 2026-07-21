@@ -11,8 +11,9 @@ from .config import DeploymentSettings
 def build_serve_command(settings: DeploymentSettings) -> list[str]:
     settings.validate()
     command = [
-        "vllm",
-        "serve",
+        "python",
+        "-m",
+        "vllm.entrypoints.openai.api_server",
         settings.model,
         "--served-model-name",
         settings.served_model_name,
@@ -33,8 +34,8 @@ def build_serve_command(settings: DeploymentSettings) -> list[str]:
         "--quantization",
         settings.quantization,
     ]
-    if settings.language_model_only:
-        command.append("--language-model-only")
+    if settings.quantization == "bitsandbytes":
+        command.extend(["--load-format", "bitsandbytes"])
     if settings.api_key:
         command.extend(["--api-key", settings.api_key])
     return command

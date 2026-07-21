@@ -1,0 +1,37 @@
+[project]
+name = "rca-training"
+version = "0.1.0"
+description = "Two-stage LoRA alignment pipeline for telecom root-cause analysis"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "accelerate>=1.4.0,<2",
+    "datasets>=4.7.0,<6",
+    "pandas>=2.2,<4",
+    "peft>=0.19.1,<1",
+    "torch>=2.8,<3",
+    "transformers==5.14.1",
+    "trl==1.8.0",
+]
+
+[project.optional-dependencies]
+flash = ["flash-attn>=2.8,<3"]
+wandb = ["wandb>=0.21,<1"]
+dev = ["pytest>=8.4,<10", "ruff>=0.12,<1"]
+
+[project.scripts]
+rca-training = "rca_training.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rca_training"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
