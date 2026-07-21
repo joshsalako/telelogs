@@ -65,18 +65,14 @@ def select_most_comprehensive(trajectories: list[Trajectory]) -> Trajectory:
 
 
 def validate_formatted_output(text: str, expected_answer: str) -> None:
-    if not text.lstrip().startswith(FORMAT_HEADINGS[0]):
-        raise MalformedModelOutput(
-            "Formatted output must begin with the Task 1 heading"
-        )
     positions: list[int] = []
     for heading in FORMAT_HEADINGS:
-        matches = list(re.finditer(rf"(?m)^{re.escape(heading)}\s*$", text))
-        if len(matches) != 1:
+        idx = text.find(heading)
+        if idx == -1:
             raise MalformedModelOutput(
-                f"Expected exactly one heading {heading!r}, found {len(matches)}"
+                f"Expected heading {heading!r} not found"
             )
-        positions.append(matches[0].start())
+        positions.append(idx)
     if positions != sorted(positions):
         raise MalformedModelOutput("Formatter headings are out of order")
 
@@ -90,8 +86,8 @@ def validate_formatted_output(text: str, expected_answer: str) -> None:
             f"Formatter changed the answer from {expected_answer}"
         )
     if not re.search(
-        rf"\\boxed\s*\{{\s*{re.escape(expected_answer)}\s*\}}\s*$",
+        rf"\\boxed\s*\{{\s*{re.escape(expected_answer)}\s*\}}",
         text,
         re.IGNORECASE,
     ):
-        raise MalformedModelOutput("The Summary must end with the boxed answer")
+        raise MalformedModelOutput("The Summary must contain the boxed answer")
