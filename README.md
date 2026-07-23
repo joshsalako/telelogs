@@ -1,5 +1,8 @@
 # Telelogs CoT Data Synthesis
 
+[![Open SFT in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joshsalako/telelogs/blob/main/unsloth_sft.ipynb)
+[![Open GRPO in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/joshsalako/telelogs/blob/main/grpo.ipynb)
+
 An asynchronous multi-agent pipeline for converting 5G network troubleshooting
 examples into a randomized, validated Chain-of-Thought supervised fine-tuning
 dataset. It targets a local Qwen3.6-27B deployment exposed through vLLM's
