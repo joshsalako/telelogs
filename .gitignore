@@ -62,3 +62,10 @@ training/.pytest_cache/
 training/.ruff_cache/
 training/.cache/
 training/wandb/
+
+# Apple-Silicon MLX datasets, adapters, checkpoints, and environments
+training_mlx/.venv/
+training_mlx/data/
+training_mlx/artifacts/
+training_mlx/.pytest_cache/
+training_mlx/.ruff_cache/
