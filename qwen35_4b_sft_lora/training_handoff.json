@@ -1,0 +1,9 @@
+{
+  "base_model": "unsloth/Qwen3.5-4B",
+  "max_seq_length": 8192,
+  "load_in_4bit": false,
+  "load_in_16bit": true,
+  "fast_inference": false,
+  "response_contract": "<think>...</think>\\n\\n\\boxed{candidate}",
+  "grpo_note": "Load this adapter over the same Qwen3.5 base and tokenizer. Keep native thinking tags and reward the strict final boxed label."
+}
