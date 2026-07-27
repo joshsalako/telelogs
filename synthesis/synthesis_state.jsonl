@@ -2400,3 +2400,17 @@
 {"kind": "completed", "source_index": 901, "variant_index": 0, "status": "accepted", "reason": "strict_majority"}
 {"kind": "completed", "source_index": 911, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
 {"kind": "completed", "source_index": 906, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 60, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 107, "variant_index": 0, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 142, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 148, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 118, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 165, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 177, "variant_index": 2, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 185, "variant_index": 0, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 192, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 186, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 199, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 196, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 203, "variant_index": 1, "status": "accepted", "reason": "strict_majority"}
+{"kind": "completed", "source_index": 214, "variant_index": 0, "status": "accepted", "reason": "strict_majority"}
