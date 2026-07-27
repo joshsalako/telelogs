@@ -56,6 +56,24 @@ def table_rows(question: str, heading: str) -> list[str]:
     return rows[1:]
 
 
+def formatted_response(answer: str = "R4") -> str:
+    rows = "\n".join(
+        f"| R{index} | Check {index} | Evidence {index} | "
+        f"{'Supported' if f'R{index}' == answer else 'Ruled out'} |"
+        for index in range(1, 9)
+    )
+    return f"""Task 1: Data analysis
+The degradation window and key measurements were identified.
+Task 2: Root cause analysis
+| Candidate | Required check | Observed evidence/calculation | Verdict |
+|---|---|---|---|
+{rows}
+Task 3: Root cause identification
+{answer} is the strongest supported candidate.
+Summary
+The validated root cause is \\boxed{{{answer}}}"""
+
+
 class RandomizationTests(unittest.TestCase):
     def test_randomization_is_deterministic_and_preserves_rows(self) -> None:
         question = sample_question()
@@ -108,30 +126,26 @@ class RandomizationTests(unittest.TestCase):
 
 
 class PromptTests(unittest.TestCase):
-    def test_generation_defaults_use_six_lower_temperature_agents(self) -> None:
-        self.assertEqual(SETTINGS.agents_per_item, 6)
+    def test_generation_defaults_use_two_balanced_lower_temperature_agents(
+        self,
+    ) -> None:
+        self.assertEqual(SETTINGS.agents_per_item, 2)
         self.assertEqual(SETTINGS.reasoning_temperature, 0.4)
         SETTINGS.validate()
 
     def test_domain_heuristics_include_every_required_check(self) -> None:
         prompt = DOMAIN_KNOWLEDGE_AND_HEURISTICS
-        expected = """### DOMAIN KNOWLEDGE & EVALUATION HEURISTICS: You must explicitly verify the following rules step-by-step using strict pattern matching before reaching a conclusion:
-
-1. **Evaluating C1 (Excessive Downtilt):** Check the "Digital Tilt" value. IF the Digital Tilt is exactly 255, you MUST treat it as 6 degrees. Explicitly write out the addition equation: "Mechanical Downtilt + Digital Tilt = Total Downtilt" (e.g., 4 + 6 = 10). NEVER add the number 255 mathematically. Compare this total to the cell's vertical beamwidth (DEFAULT/SCENARIO_1-5 = 6°, SCENARIO_6-11 = 12°, SCENARIO_12+ = 25°). If the total downtilt is high but the beamwidth is narrow, far-end coverage will be weak.
-2. **Evaluating C2 (Coverage distance > 1km):** Compare the Longitude/Latitude in the User Plane data against the Longitude/Latitude of the Serving Cell in the Engineering Parameters. *Rule of thumb:* 0.01 degrees is roughly 1 km. If BOTH the latitude difference AND the longitude difference are less than 0.009, the distance is guaranteed to be under 1km, and you MUST explicitly rule out C2. If EITHER difference is > 0.01, the distance exceeds 1km, and C2 is the root cause.
-3. **Evaluating C3 (Neighbor Cell Higher Throughput):** Look for a handover event (the `5G KPI PCell RF Serving PCI` changes). Check the `5G KPI PCell Layer2 MAC DL Throughput [Mbps]`. If the throughput drops below the target 600 Mbps threshold (e.g., < 350 Mbps) BEFORE the handover, but immediately recovers to a high value (e.g., > 600 Mbps) AFTER the handover, the neighbor provides higher throughput.
-4. **Evaluating C4 (Non-colocated Overlapping Coverage):** Focus specifically on the rows where the throughput drop occurs. Identify the `5G KPI PCell RF Serving PCI` and the top neighbor PCIs (e.g., `Measurement PCell Neighbor Cell Top Set(Cell Level) Top 1 PCI` or Top 2 PCI). Look up these exact PCIs in the "PCI" column of the Engineering parameters table. If ANY Top 1 or Top 2 neighbor PCI has a DIFFERENT `gNodeB ID` than the serving cell during the throughput degradation, non-colocated overlapping coverage (C4) is present. If they always share the EXACT SAME `gNodeB ID`, they are colocated, and you MUST explicitly rule out C4.
-5. **Evaluating C5 (Frequent Handovers):** Scan the `5G KPI PCell RF Serving PCI` column from top to bottom. Count every time the value changes from one row to the next. If it changes 2 or more times back-and-forth (e.g., PCI A -> PCI B -> PCI A), frequent handovers are occurring, and C5 is the root cause. If it changes 0 or 1 time, it is NOT frequent, and you MUST explicitly rule out C5.
-6. **Evaluating C6 (PCI Mod 30 Conflict):** You MUST check the Top 1, Top 2, AND Top 3 neighbor PCIs independently. For EACH neighbor, look at its LAST DIGIT and compare it to the LAST DIGIT of the Serving PCI. If a neighbor shares the exact same last digit, calculate their absolute difference. If the difference is a multiple of 30, C6 is the root cause. Do NOT stop checking if Top 1 fails; you must evaluate Top 2 and Top 3. *Priority Rule:* If you detect a C6 conflict, but also see a handover event (C3), C6 is the primary root cause.
-7. **Evaluating C7 (Test Vehicle Speed > 40km/h):** Scan the `GPS Speed (km/h)` column ONLY during the rows where the throughput drops. If the speed is consistently above 40 km/h (or has peaks exceeding 45 km/h) DURING the throughput drop section, C7 is the cause. Do not trigger C7 for brief 1-second speed bumps outside the degradation window.
-8. **Evaluating C8 (Average RBs < 160):** Do not calculate an average. Scan the `5G KPI PCell Layer1 DL RB Num (Including 0)` column. If there are multiple rows where the RB value is strictly less than 150 (e.g., 130, 135, 145), C8 is the cause. Do not debate if 140+ is sufficient; any sustained drop below 150 validates C8. If all values consistently stay above 150, explicitly rule out C8.
-
-Ensure that your Step-by-Step Root Cause Analysis explicitly mentions the evaluation of all 8 of these points.
-"""
-
-        self.assertEqual(prompt, expected)
-        self.assertNotIn("C1 — Excessive Downtilt", prompt)
-        self.assertNotIn("Never assume that C1 maps to R1", prompt)
+        for candidate in range(1, 9):
+            self.assertIn(f"Evaluating C{candidate}", prompt)
+        self.assertIn("does not by itself rule out C1", prompt)
+        self.assertIn("immediately recovers above 600 Mbps", prompt)
+        self.assertIn("not sufficient by itself to make C4 the primary cause", prompt)
+        self.assertIn("Never select C6 after calculating unequal remainders", prompt)
+        self.assertIn(
+            "| Candidate | Required check | Observed evidence/calculation | Verdict |",
+            prompt,
+        )
+        self.assertIn("Complete the table in one pass", prompt)
 
     def test_both_reasoning_strategies_enforce_shared_heuristics(self) -> None:
         elimination = reasoning_messages("question", Strategy.ELIMINATION)
@@ -143,19 +157,19 @@ Ensure that your Step-by-Step Root Cause Analysis explicitly mentions the evalua
         self.assertIn(DOMAIN_KNOWLEDGE_AND_HEURISTICS, contradiction[0]["content"])
         self.assertEqual(elimination[0]["content"], ELIMINATION_SYSTEM_PROMPT)
         self.assertEqual(contradiction[0]["content"], CONTRADICTION_SYSTEM_PROMPT)
-        self.assertIn("elimination routine", elimination[0]["content"])
-        self.assertIn("contradiction routine", contradiction[0]["content"])
+        self.assertIn("Do not narrate backtracking", elimination[0]["content"])
+        self.assertIn("without revisiting earlier rows", contradiction[0]["content"])
 
     def test_elimination_prompt_contains_exact_c3_few_shot_example(self) -> None:
         self.assertIn(ELIMINATION_FEW_SHOT_EXAMPLE, ELIMINATION_SYSTEM_PROMPT)
         self.assertNotIn(ELIMINATION_FEW_SHOT_EXAMPLE, CONTRADICTION_SYSTEM_PROMPT)
-        self.assertIn("PCI 919 mod 30 = 19", ELIMINATION_FEW_SHOT_EXAMPLE)
-        self.assertIn("total downtilt is 12°", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn("919 % 30 = 19", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn("4° + 8° = 12°", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn("946.52 Mbps", ELIMINATION_FEW_SHOT_EXAMPLE)
+        self.assertIn("| Candidate | Required check |", ELIMINATION_FEW_SHOT_EXAMPLE)
         self.assertIn(r"\boxed{C3}", ELIMINATION_FEW_SHOT_EXAMPLE)
         self.assertTrue(
-            ELIMINATION_SYSTEM_PROMPT.endswith(
-                "exactly one final prediction written as \\boxed{R#}."
-            )
+            ELIMINATION_SYSTEM_PROMPT.endswith("as \\boxed{R#}, with no text after it.")
         )
 
 
@@ -194,17 +208,48 @@ class ValidationTests(unittest.TestCase):
         )
 
     def test_formatted_output_requires_exact_structure_and_answer(self) -> None:
-        valid = """Task 1: Data analysis
-Evidence.
-Task 2: Root cause analysis
-Reasoning.
-Task 3: Root cause identification
-R4 is strongest.
-Summary
-Final: \\boxed{R4}"""
+        valid = formatted_response("R4")
         validate_formatted_output(valid, "R4")
         with self.assertRaises(MalformedModelOutput):
             validate_formatted_output(valid, "R3")
+
+    def test_formatted_output_requires_all_eight_unique_table_rows(self) -> None:
+        valid = formatted_response("R4")
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(valid.replace("| R8 |", "| R7 |"), "R4")
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(
+                valid.replace("| R8 | Check 8 | Evidence 8 | Ruled out |\n", ""),
+                "R4",
+            )
+
+    def test_formatted_output_rejects_prose_or_invalid_table_contract(self) -> None:
+        valid = formatted_response("R4")
+        prose = valid.replace(
+            "| Candidate | Required check | Observed evidence/calculation | Verdict |\n"
+            "|---|---|---|---|\n",
+            "",
+        )
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(prose, "R4")
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(
+                valid.replace("| Ruled out |", "| Maybe |", 1), "R4"
+            )
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(
+                valid.replace("| Ruled out |", "| Supported |", 1), "R4"
+            )
+
+    def test_formatted_output_rejects_loops_and_nonterminal_box(self) -> None:
+        valid = formatted_response("R4")
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(
+                valid.replace("R4 is the strongest", "Wait, R4 is the strongest"),
+                "R4",
+            )
+        with self.assertRaises(MalformedModelOutput):
+            validate_formatted_output(valid + "\nTrailing text.", "R4")
 
 
 class RetryClient(VLLMClient):
@@ -241,14 +286,7 @@ class RetryTests(unittest.IsolatedAsyncioTestCase):
 class ScriptedPipelineClient:
     async def chat(self, messages: list[dict[str, str]], **_: object) -> str:
         if "reasoning editor" in messages[0]["content"]:
-            return """Task 1: Data analysis
-The measurements were compared.
-Task 2: Root cause analysis
-All candidates were evaluated.
-Task 3: Root cause identification
-The evidence selects R1.
-Summary
-The validated root cause is \\boxed{R1}"""
+            return formatted_response("R1")
         await asyncio.sleep(0)
         return "R1 R2 R3 R4 R5 R6 R7 R8; final \\boxed{R1}"
 
