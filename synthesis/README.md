@@ -1,6 +1,6 @@
 # CoT SFT Data Synthesis
 
-This package converts `train.json` into a randomized, validated Chain-of-Thought
+This package converts `data/train.json` into a randomized, validated Chain-of-Thought
 SFT dataset using a local Qwen3.6-27B model served by an OpenAI-compatible vLLM
 endpoint. It is asynchronous, bounded by configurable concurrency limits, and
 safe to resume after interruption.

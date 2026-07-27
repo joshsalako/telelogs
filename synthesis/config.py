@@ -14,7 +14,11 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 
 # Input/output paths.
-INPUT_PATH = REPOSITORY_ROOT / "train.json"
+INPUT_PATH = (
+    REPOSITORY_ROOT / "data" / "train.json"
+    if (REPOSITORY_ROOT / "data" / "train.json").exists()
+    else REPOSITORY_ROOT / "train.json"
+)
 OUTPUT_PATH = REPOSITORY_ROOT / "synthesis" / "sft_train_data.jsonl"
 STATE_PATH = REPOSITORY_ROOT / "synthesis" / "synthesis_state.jsonl"
 
