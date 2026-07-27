@@ -50,9 +50,9 @@ weights/
 cache/
 huggingface/
 
-# Generated synthesis data and resumable runtime state
-synthesis/sft_train_data.jsonl
-synthesis/synthesis_state.jsonl
+# # Generated synthesis data and resumable runtime state
+# synthesis/sft_train_data.jsonl
+# synthesis/synthesis_state.jsonl
 
 # RCA alignment environments, adapters, checkpoints, evaluation, and caches
 training/.venv/
