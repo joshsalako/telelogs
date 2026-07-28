@@ -1,5 +1,8 @@
 {
   "base_model": "unsloth/Qwen3.5-4B",
+  "resume_requested": true,
+  "resume_mode": "weights-only resume",
+  "starting_adapter": "/root/telelogs/qwen35_4b_sft_lora",
   "max_seq_length": 8192,
   "load_in_4bit": false,
   "load_in_16bit": true,

@@ -21,7 +21,7 @@
     "vision_eos_token": "<|vision_end|>"
   },
   "pad_token": "<|vision_pad|>",
-  "padding_side": "right",
+  "padding_side": "left",
   "pretokenize_regex": "(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\\r\\n\\p{L}\\p{N}]?[\\p{L}\\p{M}]+|\\p{N}| ?[^\\s\\p{L}\\p{M}\\p{N}]+[\\r\\n]*|\\s*[\\r\\n]+|\\s+(?!\\S)|\\s+",
   "processor_class": "Qwen3VLProcessor",
   "split_special_tokens": false,
